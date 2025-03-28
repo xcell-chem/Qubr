@@ -57,7 +57,7 @@
     }
 
     if (!Array.isArray(qrCodes)) {
-      console.warn("⚠️ Supabase did not return an array.");
+      console.warn("⚠️ Supabase did not return an array.", qrCodes);
       return;
     }
 
@@ -100,7 +100,7 @@
       header.className = "folder-header";
       header.innerHTML = `
         <span>${folder} — Scans: ${totalScans} | Referrals: ${totalReferrals}</span>
-        <button class="export-btn" onclick="exportToCSV('${folder.replaceAll("/", "_")}', ${JSON.stringify(codes).replace(/"/g, '&quot;')})">📥 Export CSV</button>
+        <button class="export-btn" onclick='exportToCSV("${folder.replaceAll("/", "_")}", ${JSON.stringify(codes).replace(/"/g, '&quot;')})'>📥 Export CSV</button>
       `;
 
       const content = document.createElement("div");
