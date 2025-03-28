@@ -6,114 +6,105 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="/env.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 2rem; background: #f4f4f4; }
-    h2 { margin-top: 2rem; }
-    .label { margin-bottom: 2rem; border: 1px solid #ccc; border-radius: 6px; background: #fff; }
-    .label-header { background: #e2e2e2; padding: 0.75rem; cursor: pointer; font-weight: bold; }
-    .label-content { display: none; padding: 1rem; }
+    body { font-family: sans-serif; padding: 2rem; background: #f8f9fa; }
+    h1 { margin-bottom: 1rem; }
+    #search { margin-bottom: 1rem; padding: 0.5rem; width: 300px; }
+
+    .folder { margin-bottom: 2rem; border: 1px solid #ccc; border-radius: 6px; background: #fff; }
+    .folder-header {
+      background: #e9ecef; padding: 0.75rem;
+      cursor: pointer; font-weight: bold;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .folder-content { display: none; padding: 1rem; }
     table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
-    th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; }
-    th { background-color: #f0f0f0; }
-    #search { margin-bottom: 1.5rem; padding: 0.5rem; width: 300px; }
-    .summary { font-weight: bold; background: #f9f9f9; }
-    .export-btn { margin-left: 1rem; font-size: 0.9rem; }
+    th, td { border: 1px solid #dee2e6; padding: 0.5rem; text-align: left; font-size: 0.9rem; }
+    th { background-color: #f1f3f5; }
+    .export-btn { font-size: 0.85rem; }
   </style>
 </head>
 <body>
 
-<h1>📊 My QubR Dashboard</h1>
-<input type="text" id="search" placeholder="Search QR codes..." />
-
-<div id="labels"></div>
-<button onclick="logout()">Log out</button>
+<h1>📊 QubR Dashboard</h1>
+<input type="text" id="search" placeholder="Search by label, ID, or URL..." />
+<div id="folders"></div>
+<button onclick="logout()">🔒 Log out</button>
 
 <script>
   const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
-  let allCodes = [];
+  let allFolders = {};
 
   async function loadDashboard() {
-    console.log("🔄 Loading dashboard...");
     const { data: sessionData } = await supabase.auth.getSession();
-    const session = sessionData.session;
-    if (!session?.user) {
-      console.warn("🔒 No user session found. Redirecting...");
-      window.location.href = "/scan.html";
+    const user = sessionData?.session?.user;
+
+    if (!user) {
+      alert("You must be logged in.");
+      location.href = "/scan.html";
       return;
     }
 
-    const user = session.user;
-
     const { data: qrCodes, error } = await supabase
       .from("qr_codes")
-      .select("id, shared_location, redirect_url, label")
+      .select("id, label, shared_location, redirect_url, created_at, active, registered, single_use")
       .eq("owner_id", user.id)
       .order("label", { ascending: true });
 
     if (error) {
-      console.error("❌ Supabase query error:", error);
-      alert("Could not load QR codes. Please check table/column names and RLS policies.");
+      console.error("❌ Supabase fetch error:", error);
+      alert("Could not load QR codes.");
       return;
     }
 
     if (!Array.isArray(qrCodes)) {
-      console.error("⚠️ Unexpected result format from Supabase:", qrCodes);
-      alert("Unexpected response. Check Supabase logs.");
+      console.warn("⚠️ Supabase did not return an array.");
       return;
     }
 
-    if (qrCodes.length === 0) {
-      console.warn("📭 No QR codes found for this user.");
-    }
-
-    const labels = {};
+    const grouped = {};
 
     for (const qr of qrCodes) {
-      const labelKey = qr.label || "No Folder";
+      const groupLabel = qr.label || "Unlabeled";
 
-      if (!labels[labelKey]) {
-        labels[labelKey] = [];
-      }
+      if (!grouped[groupLabel]) grouped[groupLabel] = [];
 
       const { data: events } = await supabase
         .from("scan_events")
         .select("referred_signup")
         .eq("qr_id", qr.id);
 
-      labels[labelKey].push({
+      grouped[groupLabel].push({
         ...qr,
         scans: events?.length || 0,
-        referrals: events?.filter(e => e.referred_signup).length || 0,
+        referrals: events?.filter(e => e.referred_signup).length || 0
       });
     }
 
-    allCodes = labels;
-    renderLabels(labels);
+    allFolders = grouped;
+    renderFolders(grouped);
   }
 
-  function renderLabels(labeled) {
-    const container = document.getElementById("labels");
+  function renderFolders(folders) {
+    const container = document.getElementById("folders");
     container.innerHTML = "";
 
-    for (const label in labeled) {
-      const codes = labeled[label];
+    for (const folder in folders) {
+      const codes = folders[folder];
       const totalScans = codes.reduce((acc, c) => acc + c.scans, 0);
       const totalReferrals = codes.reduce((acc, c) => acc + c.referrals, 0);
 
       const wrapper = document.createElement("div");
-      wrapper.className = "label";
+      wrapper.className = "folder";
 
       const header = document.createElement("div");
-      header.className = "label-header";
-      header.textContent = label + ` (Scans: ${totalScans} | Referrals: ${totalReferrals})`;
-
-      const exportBtn = document.createElement("button");
-      exportBtn.className = "export-btn";
-      exportBtn.textContent = "Export CSV";
-      exportBtn.onclick = () => exportToCSV(label, codes);
-      header.appendChild(exportBtn);
+      header.className = "folder-header";
+      header.innerHTML = `
+        <span>${folder} — Scans: ${totalScans} | Referrals: ${totalReferrals}</span>
+        <button class="export-btn" onclick="exportToCSV('${folder.replaceAll("/", "_")}', ${JSON.stringify(codes).replace(/"/g, '&quot;')})">📥 Export CSV</button>
+      `;
 
       const content = document.createElement("div");
-      content.className = "label-content";
+      content.className = "folder-content";
 
       const table = document.createElement("table");
       table.innerHTML = `
@@ -121,9 +112,13 @@
           <tr>
             <th>ID</th>
             <th>Location</th>
-            <th>Redirect URL</th>
+            <th>Redirect</th>
             <th>Scans</th>
             <th>Referrals</th>
+            <th>Active</th>
+            <th>Registered</th>
+            <th>Single Use</th>
+            <th>Created</th>
           </tr>
         </thead>
         <tbody>
@@ -134,6 +129,10 @@
               <td><a href="${qr.redirect_url}" target="_blank">${qr.redirect_url}</a></td>
               <td>${qr.scans}</td>
               <td>${qr.referrals}</td>
+              <td>${qr.active ? "✅" : "❌"}</td>
+              <td>${qr.registered ? "✅" : "❌"}</td>
+              <td>${qr.single_use ? "☑️" : ""}</td>
+              <td>${new Date(qr.created_at).toLocaleDateString()}</td>
             </tr>
           `).join("")}
         </tbody>
@@ -150,10 +149,20 @@
     }
   }
 
-  function exportToCSV(label, data) {
+  function exportToCSV(label, codes) {
     const csv = [
-      ["ID", "Location", "Redirect URL", "Scans", "Referrals"],
-      ...data.map(qr => [qr.id, qr.shared_location || "", qr.redirect_url, qr.scans, qr.referrals])
+      ["ID", "Location", "Redirect", "Scans", "Referrals", "Active", "Registered", "Single Use", "Created At"],
+      ...codes.map(qr => [
+        qr.id,
+        qr.shared_location || "",
+        qr.redirect_url,
+        qr.scans,
+        qr.referrals,
+        qr.active,
+        qr.registered,
+        qr.single_use,
+        qr.created_at
+      ])
     ]
       .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(","))
       .join("\n");
@@ -162,39 +171,38 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = label.replaceAll("/", "_") + ".csv";
+    a.download = `${label}_qr_data.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
 
-  function filterLabels() {
+  function filterFolders() {
     const query = document.getElementById("search").value.toLowerCase();
     const filtered = {};
 
-    for (const label in allCodes) {
-      const matches = allCodes[label].filter(code =>
-        code.id.toLowerCase().includes(query) ||
-        (code.shared_location || "").toLowerCase().includes(query) ||
-        (code.label || "").toLowerCase().includes(query)
+    for (const label in allFolders) {
+      const matches = allFolders[label].filter(qr =>
+        qr.id.toLowerCase().includes(query) ||
+        (qr.shared_location || "").toLowerCase().includes(query) ||
+        (qr.label || "").toLowerCase().includes(query) ||
+        (qr.redirect_url || "").toLowerCase().includes(query)
       );
-
       if (matches.length > 0) {
         filtered[label] = matches;
       }
     }
 
-    renderLabels(filtered);
+    renderFolders(filtered);
   }
 
-  document.getElementById("search").addEventListener("input", filterLabels);
+  document.getElementById("search").addEventListener("input", filterFolders);
 
   async function logout() {
     await supabase.auth.signOut();
-    window.location.reload();
+    location.reload();
   }
 
   loadDashboard();
 </script>
-
 </body>
 </html>
