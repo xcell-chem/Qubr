@@ -43,8 +43,9 @@
 
     const { data: qrCodes } = await supabase
       .from("qr_codes")
-      .select("id, shared_location, redirect_url, group")
-      .eq("owner_id", user.id)
+     // ✅ Corrected:
+.select("id, shared_location, redirect_url, label")
+ .eq("owner_id", user.id)
       .order("group", { ascending: true });
 
     const groups = {};
