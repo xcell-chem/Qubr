@@ -8,9 +8,9 @@
   <style>
     body { font-family: sans-serif; padding: 2rem; background: #f4f4f4; }
     h2 { margin-top: 2rem; }
-    .group { margin-bottom: 2rem; border: 1px solid #ccc; border-radius: 6px; background: #fff; }
-    .group-header { background: #e2e2e2; padding: 0.75rem; cursor: pointer; font-weight: bold; }
-    .group-content { display: none; padding: 1rem; }
+    .label { margin-bottom: 2rem; border: 1px solid #ccc; border-radius: 6px; background: #fff; }
+    .label-header { background: #e2e2e2; padding: 0.75rem; cursor: pointer; font-weight: bold; }
+    .label-content { display: none; padding: 1rem; }
     table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
     th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; }
     th { background-color: #f0f0f0; }
@@ -24,7 +24,7 @@
 <h1>📊 My QubR Dashboard</h1>
 <input type="text" id="search" placeholder="Search QR codes..." />
 
-<div id="groups"></div>
+<div id="labels"></div>
 <button onclick="logout()">Log out</button>
 
 <script>
@@ -46,15 +46,15 @@
      // ✅ Corrected:
 .select("id, shared_location, redirect_url, label")
  .eq("owner_id", user.id)
-      .order("group", { ascending: true });
+      .order("label", { ascending: true });
 
-    const groups = {};
+    const labels = {};
   
     for (const qr of qrCodes) {
-      const groupKey = qr.group || "No Folder";
+      const labelKey = qr.label || "No Folder";
 
-      if (!groups[groupKey]) {
-        groups[groupKey] = [];
+      if (!labels[labelKey]) {
+        labels[labelKey] = [];
       }
 
       const { data: events } = await supabase
@@ -62,41 +62,41 @@
         .select("referred_signup")
         .eq("qr_id", qr.id);
 
-      groups[groupKey].push({
+      labels[labelKey].push({
         ...qr,
         scans: events?.length || 0,
         referrals: events?.filter(e => e.referred_signup).length || 0,
       });
     }
 
-    allCodes = groups;
-    renderGroups(groups);
+    allCodes = labels;
+    renderlabels(labels);
   }
 
-  function renderGroups(grouped) {
-    const container = document.getElementById("groups");
+  function renderlabels(labeled) {
+    const container = document.getElementById("labels");
     container.innerHTML = "";
 
-    for (const group in grouped) {
-      const codes = grouped[group];
+    for (const label in labeled) {
+      const codes = labeled[label];
       const totalScans = codes.reduce((acc, c) => acc + c.scans, 0);
       const totalReferrals = codes.reduce((acc, c) => acc + c.referrals, 0);
 
       const wrapper = document.createElement("div");
-      wrapper.className = "group";
+      wrapper.className = "label";
 
       const header = document.createElement("div");
-      header.className = "group-header";
-      header.textContent = group + ` (Scans: ${totalScans} | Referrals: ${totalReferrals})`;
+      header.className = "label-header";
+      header.textContent = label + ` (Scans: ${totalScans} | Referrals: ${totalReferrals})`;
 
       const exportBtn = document.createElement("button");
       exportBtn.className = "export-btn";
       exportBtn.textContent = "Export CSV";
-      exportBtn.onclick = () => exportToCSV(group, codes);
+      exportBtn.onclick = () => exportToCSV(label, codes);
       header.appendChild(exportBtn);
 
       const content = document.createElement("div");
-      content.className = "group-content";
+      content.className = "label-content";
 
       const table = document.createElement("table");
       table.innerHTML = `
@@ -133,7 +133,7 @@
     }
   }
 
-  function exportToCSV(group, data) {
+  function exportToCSV(label, data) {
     const csv = [
       ["ID", "Location", "Redirect URL", "Scans", "Referrals"],
       ...data.map(qr => [qr.id, qr.shared_location || "", qr.redirect_url, qr.scans, qr.referrals])
@@ -145,31 +145,31 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = group.replaceAll("/", "_") + ".csv";
+    a.download = label.replaceAll("/", "_") + ".csv";
     a.click();
     URL.revokeObjectURL(url);
   }
 
-  function filterGroups() {
+  function filterlabels() {
     const query = document.getElementById("search").value.toLowerCase();
     const filtered = {};
 
-    for (const group in allCodes) {
-      const matches = allCodes[group].filter(code =>
+    for (const label in allCodes) {
+      const matches = allCodes[label].filter(code =>
         code.id.toLowerCase().includes(query) ||
         (code.shared_location || "").toLowerCase().includes(query) ||
-        (code.group || "").toLowerCase().includes(query)
+        (code.label || "").toLowerCase().includes(query)
       );
 
       if (matches.length > 0) {
-        filtered[group] = matches;
+        filtered[label] = matches;
       }
     }
 
-    renderGroups(filtered);
+    renderlabels(filtered);
   }
 
-  document.getElementById("search").addEventListener("input", filterGroups);
+  document.getElementById("search").addEventListener("input", filterlabels);
 
   async function logout() {
     await supabase.auth.signOut();
