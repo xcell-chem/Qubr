@@ -32,9 +32,11 @@
   let allCodes = [];
 
   async function loadDashboard() {
+    console.log("🔄 Loading dashboard...");
     const { data: sessionData } = await supabase.auth.getSession();
     const session = sessionData.session;
     if (!session?.user) {
+      console.warn("🔒 No user session found. Redirecting...");
       window.location.href = "/scan.html";
       return;
     }
@@ -48,15 +50,19 @@
       .order("label", { ascending: true });
 
     if (error) {
-      console.error("❌ Error loading QR codes:", error);
-      alert("Could not load QR codes. Please check your Supabase table, column names, or RLS policies.");
+      console.error("❌ Supabase query error:", error);
+      alert("Could not load QR codes. Please check table/column names and RLS policies.");
       return;
     }
 
     if (!Array.isArray(qrCodes)) {
-      console.error("⚠️ Unexpected QR code response:", qrCodes);
-      alert("Something went wrong loading your codes.");
+      console.error("⚠️ Unexpected result format from Supabase:", qrCodes);
+      alert("Unexpected response. Check Supabase logs.");
       return;
+    }
+
+    if (qrCodes.length === 0) {
+      console.warn("📭 No QR codes found for this user.");
     }
 
     const labels = {};
