@@ -6,11 +6,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="/env.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 2rem; background: #f8f9fa; }
+    body { font-family: sans-serif; padding: 2rem; background: #f9f9f9; }
     h1 { margin-bottom: 1rem; }
+    #balances { margin-bottom: 1rem; font-weight: bold; }
     #search { margin-bottom: 1rem; padding: 0.5rem; width: 300px; }
 
-    .folder { margin-bottom: 2rem; border: 1px solid #ccc; border-radius: 6px; background: #fff; }
+    .folder { margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 6px; background: #fff; }
     .folder-header {
       background: #e9ecef; padding: 0.75rem;
       cursor: pointer; font-weight: bold;
@@ -26,86 +27,102 @@
 <body>
 
 <h1>📊 QubR Dashboard</h1>
+<div id="balances"></div>
 <input type="text" id="search" placeholder="Search by label, ID, or URL..." />
 <div id="folders"></div>
 <button onclick="logout()">🔒 Log out</button>
 
 <script>
-  const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
-  let allFolders = {};
+const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
+let user = null;
+let allCodes = [];
 
-  async function loadDashboard() {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const user = sessionData?.session?.user;
+async function loadDashboard() {
+  const { data: sessionData } = await supabase.auth.getSession();
+  user = sessionData?.session?.user;
 
-    if (!user) {
-      alert("You must be logged in.");
-      location.href = "/scan.html";
-      return;
-    }
-
-    const { data: qrCodes, error } = await supabase
-      .from("qr_codes")
-      .select("id, label, shared_location, redirect_url, created_at, active, registered, single_use")
-      .eq("owner_id", user.id)
-      .order("label", { ascending: true });
-
-    if (error) {
-      console.error("❌ Supabase fetch error:", error);
-      alert("Could not load QR codes.");
-      return;
-    }
-
-    if (!Array.isArray(qrCodes)) {
-      console.warn("⚠️ Supabase did not return an array.", qrCodes);
-      return;
-    }
-
-    const grouped = {};
-
-    for (const qr of qrCodes) {
-      const groupLabel = qr.label || "Unlabeled";
-
-      if (!grouped[groupLabel]) grouped[groupLabel] = [];
-
-      const { data: events } = await supabase
-        .from("scan_events")
-        .select("referred_signup")
-        .eq("qr_id", qr.id);
-
-      grouped[groupLabel].push({
-        ...qr,
-        scans: events?.length || 0,
-        referrals: events?.filter(e => e.referred_signup).length || 0
-      });
-    }
-
-    allFolders = grouped;
-    renderFolders(grouped);
+  if (!user) {
+    const { data: userData } = await supabase.auth.getUser();
+    user = userData?.user;
   }
 
-  function renderFolders(folders) {
-    const container = document.getElementById("folders");
-    container.innerHTML = "";
+  if (!user) {
+    document.body.innerHTML = `
+      <h2>🔐 Please log in to access your dashboard.</h2>
+      <button onclick="login()">Login with Google</button>
+    `;
+    return;
+  }
 
-    for (const folder in folders) {
-      const codes = folders[folder];
-      const totalScans = codes.reduce((acc, c) => acc + c.scans, 0);
-      const totalReferrals = codes.reduce((acc, c) => acc + c.referrals, 0);
+  const [{ data: qrCodes, error }, { data: userInfo }] = await Promise.all([
+    supabase.from("qr_codes").select("*").eq("owner_id", user.id),
+    supabase.from("app_users").select("coin_balance, free_credits, purchased_credits").eq("id", user.id).single()
+  ]);
 
-      const wrapper = document.createElement("div");
-      wrapper.className = "folder";
+  if (error || !Array.isArray(qrCodes)) {
+    console.error("❌ Failed to load QR codes:", error);
+    alert("Unable to load QR codes.");
+    return;
+  }
 
-      const header = document.createElement("div");
-      header.className = "folder-header";
-      header.innerHTML = `
-        <span>${folder} — Scans: ${totalScans} | Referrals: ${totalReferrals}</span>
-        <button class="export-btn" onclick='exportToCSV("${folder.replaceAll("/", "_")}", ${JSON.stringify(codes).replace(/"/g, '&quot;')})'>📥 Export CSV</button>
-      `;
+  document.getElementById("balances").innerText =
+    `💰 Coins: ${userInfo?.coin_balance || 0} | 🖨️ Free credits: ${userInfo?.free_credits || 0} | Purchased: ${userInfo?.purchased_credits || 0}`;
 
-      const content = document.createElement("div");
-      content.className = "folder-content";
+  allCodes = [];
 
+  for (const qr of qrCodes) {
+    const { data: events } = await supabase
+      .from("scan_events")
+      .select("referred_signup")
+      .eq("qr_id", qr.id);
+
+    allCodes.push({
+      ...qr,
+      scans: events?.length || 0,
+      referrals: events?.filter(e => e.referred_signup).length || 0
+    });
+  }
+
+  const tree = buildFolderTree(allCodes);
+  renderFolderTree(tree, document.getElementById("folders"));
+}
+
+function buildFolderTree(codes) {
+  const root = {};
+
+  for (const qr of codes) {
+    const pathParts = (qr.label || "Unlabeled").split("/").map(s => s.trim());
+    let node = root;
+
+    for (let i = 0; i < pathParts.length; i++) {
+      const part = pathParts[i];
+      if (!node[part]) node[part] = { __codes: [], __subfolders: {} };
+      if (i === pathParts.length - 1) {
+        node[part].__codes.push(qr);
+      } else {
+        node = node[part].__subfolders;
+      }
+    }
+  }
+
+  return root;
+}
+
+function renderFolderTree(tree, container) {
+  container.innerHTML = "";
+  for (const folderName in tree) {
+    const folder = tree[folderName];
+    const wrapper = document.createElement("div");
+    wrapper.className = "folder";
+
+    const header = document.createElement("div");
+    header.className = "folder-header";
+    header.textContent = folderName;
+
+    const content = document.createElement("div");
+    content.className = "folder-content";
+
+    if (folder.__codes.length) {
       const table = document.createElement("table");
       table.innerHTML = `
         <thead>
@@ -116,13 +133,11 @@
             <th>Scans</th>
             <th>Referrals</th>
             <th>Active</th>
-            <th>Registered</th>
             <th>Single Use</th>
-            <th>Created</th>
           </tr>
         </thead>
         <tbody>
-          ${codes.map(qr => `
+          ${folder.__codes.map(qr => `
             <tr>
               <td>${qr.id}</td>
               <td>${qr.shared_location || ""}</td>
@@ -130,79 +145,54 @@
               <td>${qr.scans}</td>
               <td>${qr.referrals}</td>
               <td>${qr.active ? "✅" : "❌"}</td>
-              <td>${qr.registered ? "✅" : "❌"}</td>
               <td>${qr.single_use ? "☑️" : ""}</td>
-              <td>${new Date(qr.created_at).toLocaleDateString()}</td>
             </tr>
           `).join("")}
         </tbody>
       `;
-
       content.appendChild(table);
-      header.onclick = () => {
-        content.style.display = content.style.display === "none" ? "block" : "none";
-      };
-
-      wrapper.appendChild(header);
-      wrapper.appendChild(content);
-      container.appendChild(wrapper);
-    }
-  }
-
-  function exportToCSV(label, codes) {
-    const csv = [
-      ["ID", "Location", "Redirect", "Scans", "Referrals", "Active", "Registered", "Single Use", "Created At"],
-      ...codes.map(qr => [
-        qr.id,
-        qr.shared_location || "",
-        qr.redirect_url,
-        qr.scans,
-        qr.referrals,
-        qr.active,
-        qr.registered,
-        qr.single_use,
-        qr.created_at
-      ])
-    ]
-      .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(","))
-      .join("\n");
-
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${label}_qr_data.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  function filterFolders() {
-    const query = document.getElementById("search").value.toLowerCase();
-    const filtered = {};
-
-    for (const label in allFolders) {
-      const matches = allFolders[label].filter(qr =>
-        qr.id.toLowerCase().includes(query) ||
-        (qr.shared_location || "").toLowerCase().includes(query) ||
-        (qr.label || "").toLowerCase().includes(query) ||
-        (qr.redirect_url || "").toLowerCase().includes(query)
-      );
-      if (matches.length > 0) {
-        filtered[label] = matches;
-      }
     }
 
-    renderFolders(filtered);
+    // Subfolders
+    renderFolderTree(folder.__subfolders, content);
+
+    header.onclick = () => {
+      content.style.display = content.style.display === "none" ? "block" : "none";
+    };
+
+    wrapper.appendChild(header);
+    wrapper.appendChild(content);
+    container.appendChild(wrapper);
   }
+}
 
-  document.getElementById("search").addEventListener("input", filterFolders);
+function filterFolders() {
+  const query = document.getElementById("search").value.toLowerCase();
+  const filtered = allCodes.filter(qr =>
+    qr.id.toLowerCase().includes(query) ||
+    (qr.shared_location || "").toLowerCase().includes(query) ||
+    (qr.label || "").toLowerCase().includes(query) ||
+    (qr.redirect_url || "").toLowerCase().includes(query)
+  );
+  const tree = buildFolderTree(filtered);
+  renderFolderTree(tree, document.getElementById("folders"));
+}
 
-  async function logout() {
-    await supabase.auth.signOut();
-    location.reload();
-  }
+async function logout() {
+  await supabase.auth.signOut();
+  window.location.reload();
+}
 
-  loadDashboard();
+async function login() {
+  await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: window.location.href }
+  });
+}
+
+document.getElementById("search").addEventListener("input", filterFolders);
+loadDashboard();
 </script>
+
 </body>
 </html>
