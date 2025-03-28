@@ -41,15 +41,26 @@
 
     const user = session.user;
 
-    const { data: qrCodes } = await supabase
+    const { data: qrCodes, error } = await supabase
       .from("qr_codes")
-     // ✅ Corrected:
-.select("id, shared_location, redirect_url, label")
- .eq("owner_id", user.id)
+      .select("id, shared_location, redirect_url, label")
+      .eq("owner_id", user.id)
       .order("label", { ascending: true });
 
+    if (error) {
+      console.error("❌ Error loading QR codes:", error);
+      alert("Could not load QR codes. Please check your Supabase table, column names, or RLS policies.");
+      return;
+    }
+
+    if (!Array.isArray(qrCodes)) {
+      console.error("⚠️ Unexpected QR code response:", qrCodes);
+      alert("Something went wrong loading your codes.");
+      return;
+    }
+
     const labels = {};
-  
+
     for (const qr of qrCodes) {
       const labelKey = qr.label || "No Folder";
 
@@ -70,10 +81,10 @@
     }
 
     allCodes = labels;
-    renderlabels(labels);
+    renderLabels(labels);
   }
 
-  function renderlabels(labeled) {
+  function renderLabels(labeled) {
     const container = document.getElementById("labels");
     container.innerHTML = "";
 
@@ -139,7 +150,7 @@
       ...data.map(qr => [qr.id, qr.shared_location || "", qr.redirect_url, qr.scans, qr.referrals])
     ]
       .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(","))
-      .join("\\n");
+      .join("\n");
 
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -150,7 +161,7 @@
     URL.revokeObjectURL(url);
   }
 
-  function filterlabels() {
+  function filterLabels() {
     const query = document.getElementById("search").value.toLowerCase();
     const filtered = {};
 
@@ -166,10 +177,10 @@
       }
     }
 
-    renderlabels(filtered);
+    renderLabels(filtered);
   }
 
-  document.getElementById("search").addEventListener("input", filterlabels);
+  document.getElementById("search").addEventListener("input", filterLabels);
 
   async function logout() {
     await supabase.auth.signOut();
