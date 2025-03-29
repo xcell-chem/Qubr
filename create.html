@@ -9,31 +9,30 @@
 
 <header>
   <img src="logo.png" alt="QubR Logo">
-  <h1>QubR Dashboard</h1>
   <div id="balances">
     💰 Coins: <span id="coin-balance">9999</span> |
     🖨 Free credits: <span id="free-print-balance">0</span> |
     Purchased: <span id="purchased-print-balance">999999</span>
   </div>
   <div class="nav">
-    <a href="index.html">🏠 Home</a>
+    <button onclick="window.location.href='index.html'">🏠 Home</button>
     <button onclick="logout()">🔒 Logout</button>
   </div>
 </header>
-
+<h1 style="text-align: center; color: gold;">✨ Create QR Codes – QubR</h1>
+ 
 <main class="container">
-  <h1 style="text-align: center; color: gold;">✨ Create QR Codes – QubR</h1>
-  <form>
+   <form>
     <label style="text-align: center;">How many QR codes?
       <input type="number" value="1">
     </label>
 
     <label style="text-align: center;">Redirect URL (optional)
-      <input type="url" placeholder="https://example.com">
+      <input type="url" value="QubR.co.uk">
     </label>
 
     <label style="text-align: center;">Group / Folder (optional)
-      <input type="text" placeholder="e.g. event/flyer1">
+      <input type="text" placeholder="e.g. 2025/March/Easter/flyer1">
     </label>
 
     <label style="text-align: center;">Description (optional)
