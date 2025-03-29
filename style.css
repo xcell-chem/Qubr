@@ -206,3 +206,37 @@ th {
 #logout-box {
   display: none;
 }
+
+
+/* === Custom Styling Updates === */
+
+/* Homepage Text */
+.homepage-text {
+  color: gold;
+  text-align: center;
+}
+
+/* Table Background */
+table {
+  background-color: #f8f9fa;
+}
+
+th {
+  background-color: #e9ecef;
+  color: #333;
+}
+
+td {
+  background-color: #fcfcfc;
+}
+
+/* Header and Coin Balances */
+header, #balances {
+  color: gold;
+}
+
+/* Coin balance box (optional custom style) */
+#balances {
+  font-size: 1.2rem;
+  margin-top: 1rem;
+}
