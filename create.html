@@ -36,7 +36,7 @@
   </label>
 
   <label>Group / Folder (optional):
-    <input type="text" id="group" />
+    <input type="text" id="label" />
   </label>
 
   <label>Description (optional):
@@ -65,7 +65,7 @@
     const idType = document.getElementById("id_type").value;
     const customId = document.getElementById("custom_id").value.trim();
     const redirectUrl = document.getElementById("redirect_url").value.trim();
-    const group = document.getElementById("group").value.trim();
+    const label = document.getElementById("label").value.trim();
     const custom_1 = document.getElementById("custom_1").value.trim();
     const active = document.getElementById("active").checked;
     const singleUse = document.getElementById("single_use").checked;
@@ -87,7 +87,7 @@
       id: qrId,
       owner_id: user.id,
       redirect_url: redirectUrl || null,
-      group: group || null,
+      label: label || null,
       custom_1: custom_1 || null,
       active,
       single_use: singleUse,
