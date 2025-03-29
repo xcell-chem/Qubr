@@ -2,151 +2,46 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Create QR Code | QubR</title>
+  <title>Create QR Codes | QubR</title>
+  <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script src="/env.js"></script>
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 2rem;
-      background: #f9f9f9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-  
-    h1 {
-      text-align: center;
-      margin-bottom: 1.5rem;
-    }
-  
-    form {
-      width: 100%;
-      max-width: 600px;
-      background: white;
-      padding: 2rem;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-    }
-  
-    label {
-      display: block;
-      margin-top: 1rem;
-      text-align: center;
-    }
-  
-    input, select, button, textarea {
-      margin-top: 0.5rem;
-      padding: 0.5rem;
-      width: 100%;
-      box-sizing: border-box;
-    }
-  
-    button {
-      margin-top: 1.5rem;
-      font-weight: bold;
-      background-color: #333;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-  
-    #qrcode {
-      margin-top: 2rem;
-      text-align: center;
-    }
-  </style>
-  
 </head>
 <body>
+<div style="text-align: center; margin-bottom: 1rem;"><img src="logo.png" alt="QubR Logo" style="max-height: 80px;" /></div>
+<div style="text-align: center;"><a href="index.html">🏠 Back to Home</a></div>
 
-<h1>Create a QR Code</h1>
 
-<form id="create-form">
-  <label>QR Code ID Type:
-    <select id="id_type">
-      <option value="uuid">Generate UUID</option>
-      <option value="custom">Use Custom ID</option>
-    </select>
-  </label>
+  <div class="container">
+    <h1>✨ Create QR Codes – QubR</h1>
 
-  <label id="custom-id-label" style="display:none;">Custom QR ID:
-    <input type="text" id="custom_id" placeholder="e.g. station_3" />
-  </label>
+    <form id="create-form">
+      <label for="quantity">How many QR codes?</label>
+      <input type="number" id="quantity" min="1" max="100" value="1" />
 
-  <label>Redirect URL (optional):
-    <input type="url" id="redirect_url" value="QubR.co.uk" />
-  </label>
+      <label for="redirect_url">Redirect URL (optional)</label>
+      <input type="url" id="redirect_url" placeholder="https://example.com" />
 
-  <label>Group / Folder (optional):
-    <input type="text" id="label" placeholder="e.g. campaign/flyer/set1" />
-  </label>
+      <label for="group">Group / Folder (optional)</label>
+      <input type="text" id="group" placeholder="e.g. event/flyer1" />
 
-  <label>Description (optional):
-    <textarea id="custom_1" rows="2" placeholder="e.g. Front entrance, promo flyer 4"></textarea>
-  </label>
+      <label for="custom_1">Description (optional)</label>
+      <textarea id="custom_1" rows="2" placeholder="e.g. School hall, promo 3"></textarea>
 
-  <label><input type="checkbox" id="active" checked /> QR code is active</label>
-  <label><input type="checkbox" id="single_use" /> Single use only</label>
-  <label><input type="checkbox" id="registered" checked /> Pre-register now (ready to scan immediately)</label>
+      <label><input type="checkbox" id="active" checked /> QR code is active</label>
+      <label><input type="checkbox" id="single_use" /> Single use only</label>
+      <label>
+        <input type="checkbox" id="registered" checked />
+        Pre-register (ready to use now). If unchecked, user can edit details on first scan.
+      </label>
 
-  <button type="submit">Create & Save QR Code</button>
-</form>
+      <button type="submit">Generate QR Codes</button>
+    </form>
 
-<canvas id="qrcode"></canvas>
+    <div id="qrcode-preview-container"></div>
+  </div>
 
-<script>
-  const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
-
-  document.getElementById("id_type").addEventListener("change", (e) => {
-    document.getElementById("custom-id-label").style.display = e.target.value === "custom" ? "block" : "none";
-  });
-
-  document.getElementById("create-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const idType = document.getElementById("id_type").value;
-    const customId = document.getElementById("custom_id").value.trim();
-    const redirectUrl = document.getElementById("redirect_url").value.trim();
-    const label = document.getElementById("label").value.trim();
-    const custom_1 = document.getElementById("custom_1").value.trim();
-    const active = document.getElementById("active").checked;
-    const singleUse = document.getElementById("single_use").checked;
-    const registered = document.getElementById("registered").checked;
-
-    if (idType === "custom" && !customId) return alert("Custom ID is required.");
-
-    const { data: sessionData } = await supabase.auth.getSession();
-    const user = sessionData?.session?.user;
-    if (!user) return alert("Please log in first.");
-
-    const qrId = idType === "uuid" ? crypto.randomUUID() : customId;
-    const fullURL = `https://superlative-creponne-0f6c7f.netlify.app/?id=${qrId}`;
-
-    const canvas = document.getElementById("qrcode");
-    await QRCode.toCanvas(canvas, fullURL, { width: 200 });
-
-    const { error } = await supabase.from("qr_codes").insert({
-      id: qrId,
-      owner_id: user.id,
-      redirect_url: redirectUrl || null,
-      label: label || null,
-      custom_1: custom_1 || null,
-      active,
-      single_use: singleUse,
-      registered,
-      created_by: user.id
-    });
-
-    if (error) {
-      console.error("Save error:", error);
-      alert("❌ Failed to save QR code.");
-    } else {
-      alert("✅ QR code created and saved!");
-    }
-  });
-</script>
-
+  <script src="create.js"></script>
 </body>
 </html>
