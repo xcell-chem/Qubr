@@ -1,38 +1,66 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<title>Create QR Codes | QubR</title>
-<link href="style.css" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-<script src="/env.js"></script>
+  <meta charset="UTF-8">
+  <title>Create QR Codes – QubR</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div style="text-align: center; margin-bottom: 1rem;"><img alt="QubR Logo" src="https://catlvxqphrmicnjzbyal.supabase.co/storage/v1/object/public/images//qbr.jpg" style="max-height: 80px;"/></div>
-<div style="text-align: center;"><a href="index.html">🏠 Back to Home</a></div>
-<div class="container">
-<h1>✨ Create QR Codes – QubR</h1>
-<form id="create-form">
-<label for="quantity">How many QR codes?</label>
-<input id="quantity" max="100" min="1" type="number" value="1"/>
-<label for="redirect_url">Redirect URL (optional)</label>
-<input id="redirect_url" placeholder="https://example.com" type="url"/>
-<label for="group">Group / Folder (optional)</label>
-<input id="group" placeholder="e.g. event/flyer1" type="text"/>
-<label for="custom_1">Description (optional)</label>
-<textarea id="custom_1" placeholder="e.g. School hall, promo 3" rows="2"></textarea>
-<label><input checked="" id="active" type="checkbox"/> QR code is active</label>
-<label><input id="single_use" type="checkbox"/> Single use only</label>
-<label>
-<input checked="" id="registered" type="checkbox"/>
-        Pre-register (ready to use now). If unchecked, user can edit details on first scan.
-      </label>
-<button type="submit">Generate QR Codes</button>
-</form>
-<div id="qrcode-preview-container"></div>
-</div>
+
+<header>
+  <img src="logo.png" alt="QubR Logo">
+  <h1>QubR Dashboard</h1>
+  <div id="balances">
+    💰 Coins: <span id="coin-balance">9999</span> |
+    🖨 Free credits: <span id="free-print-balance">0</span> |
+    Purchased: <span id="purchased-print-balance">999999</span>
+  </div>
+  <div class="nav">
+    <a href="index.html">🏠 Home</a>
+    <button onclick="logout()">🔒 Logout</button>
+  </div>
+</header>
+
+<main class="container">
+  <h1 style="text-align: center; color: gold;">✨ Create QR Codes – QubR</h1>
+  <form>
+    <label style="text-align: center;">How many QR codes?
+      <input type="number" value="1">
+    </label>
+
+    <label style="text-align: center;">Redirect URL (optional)
+      <input type="url" placeholder="https://example.com">
+    </label>
+
+    <label style="text-align: center;">Group / Folder (optional)
+      <input type="text" placeholder="e.g. event/flyer1">
+    </label>
+
+    <label style="text-align: center;">Description (optional)
+      <textarea placeholder="e.g. School hall, promo 3"></textarea>
+    </label>
+
+    <label style="text-align: center;">
+      <input type="checkbox" checked> QR code is active
+    </label>
+
+    <label style="text-align: center;">
+      <input type="checkbox"> Single use only
+    </label>
+
+    <label style="text-align: center;">
+      <input type="checkbox" checked> Pre-register (ready to use now). If unchecked, user can edit on first scan.
+    </label>
+
+    <button type="submit">Generate QR Codes</button>
+  </form>
+</main>
+
 <script src="create.js"></script>
-</body><div id="balances">Coin Balance: 0</div>
+<script>
+  function logout() {
+    alert('Logged out!');
+  }
+</script>
+</body>
 </html>
