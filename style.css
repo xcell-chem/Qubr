@@ -67,3 +67,145 @@ button:hover {
   font-size: 0.8rem;
   word-break: break-word;
 }
+
+
+/* Extracted Inline CSS */
+body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background: #f9f9f9;
+      margin: 0;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
+    header img {
+      height: 60px;
+    }
+
+    header h1 {
+      flex-grow: 1;
+      text-align: center;
+      margin: 0;
+    }
+
+    header .nav {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    #balances {
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+
+    #search {
+      padding: 0.5rem;
+      width: 300px;
+      margin-bottom: 1rem;
+    }
+
+    .folder {
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #fff;
+    }
+
+    .folder-header {
+      background: #e9ecef;
+      padding: 0.75rem;
+      cursor: pointer;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .folder-content {
+      display: block;
+      padding: 1rem;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    th, td {
+      border: 1px solid #dee2e6;
+      padding: 0.5rem;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background-color: #f1f3f5;
+    }
+
+    .export-btn {
+      font-size: 0.85rem;
+    }
+
+/* Extracted Inline CSS */
+body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #1a1a2e;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+    .logo {
+      max-width: 300px;
+      margin-bottom: 2rem;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    p {
+      max-width: 600px;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 2.5rem;
+    }
+    .buttons {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .buttons a {
+      background-color: #00adb5;
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+    .buttons a:hover {
+      background-color: #007b80;
+    }
+
+/* Extracted Inline CSS */
+body { font-family: sans-serif; padding: 2rem; }
+    #form, #login, #loading, #thankyou, #logout-box { display: none; }
+    label { display: block; margin-top: 1rem; }
+    input, button { margin-top: 0.5rem; }

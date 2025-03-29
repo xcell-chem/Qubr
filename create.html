@@ -1,46 +1,38 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Create QR Codes | QubR</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-  <script src="/env.js"></script>
+<meta charset="utf-8"/>
+<title>Create QR Codes | QubR</title>
+<link href="style.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script src="/env.js"></script>
 </head>
 <body>
-<div style="text-align: center; margin-bottom: 1rem;"><img src="https://catlvxqphrmicnjzbyal.supabase.co/storage/v1/object/public/images//qbr.jpg" alt="QubR Logo" style="max-height: 80px;" /></div>
+<div style="text-align: center; margin-bottom: 1rem;"><img alt="QubR Logo" src="https://catlvxqphrmicnjzbyal.supabase.co/storage/v1/object/public/images//qbr.jpg" style="max-height: 80px;"/></div>
 <div style="text-align: center;"><a href="index.html">🏠 Back to Home</a></div>
-
-  <div class="container">
-    <h1>✨ Create QR Codes – QubR</h1>
-
-    <form id="create-form">
-      <label for="quantity">How many QR codes?</label>
-      <input type="number" id="quantity" min="1" max="100" value="1" />
-
-      <label for="redirect_url">Redirect URL (optional)</label>
-      <input type="url" id="redirect_url" placeholder="https://example.com" />
-
-      <label for="group">Group / Folder (optional)</label>
-      <input type="text" id="group" placeholder="e.g. event/flyer1" />
-
-      <label for="custom_1">Description (optional)</label>
-      <textarea id="custom_1" rows="2" placeholder="e.g. School hall, promo 3"></textarea>
-
-      <label><input type="checkbox" id="active" checked /> QR code is active</label>
-      <label><input type="checkbox" id="single_use" /> Single use only</label>
-      <label>
-        <input type="checkbox" id="registered" checked />
+<div class="container">
+<h1>✨ Create QR Codes – QubR</h1>
+<form id="create-form">
+<label for="quantity">How many QR codes?</label>
+<input id="quantity" max="100" min="1" type="number" value="1"/>
+<label for="redirect_url">Redirect URL (optional)</label>
+<input id="redirect_url" placeholder="https://example.com" type="url"/>
+<label for="group">Group / Folder (optional)</label>
+<input id="group" placeholder="e.g. event/flyer1" type="text"/>
+<label for="custom_1">Description (optional)</label>
+<textarea id="custom_1" placeholder="e.g. School hall, promo 3" rows="2"></textarea>
+<label><input checked="" id="active" type="checkbox"/> QR code is active</label>
+<label><input id="single_use" type="checkbox"/> Single use only</label>
+<label>
+<input checked="" id="registered" type="checkbox"/>
         Pre-register (ready to use now). If unchecked, user can edit details on first scan.
       </label>
-
-      <button type="submit">Generate QR Codes</button>
-    </form>
-
-    <div id="qrcode-preview-container"></div>
-  </div>
-
-  <script src="create.js"></script>
+<button type="submit">Generate QR Codes</button>
+</form>
+<div id="qrcode-preview-container"></div>
+</div>
+<script src="create.js"></script>
 </body>
 </html>
