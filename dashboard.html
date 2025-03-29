@@ -123,24 +123,13 @@ function renderFolderTree(tree, container) {
     const header = document.createElement("div");
     header.className = "folder-header";
     header.textContent = `${folderName} (${folder.__codes.length} codes)`;
-    console.log(`📂 Folder: "${folderName}" → Codes:`, folder.__codes);
+    console.log(`📁 Folder: ${folderName}, Codes: ${folder.__codes.length}`, folder.__codes);
 
     const content = document.createElement("div");
     content.className = "folder-content";
+    content.style.display = "block"; // 👈 Keep folders open by default during debug
 
-    // ✅ TEMP: Add dummy code for testing
-    const testRow = {
-      id: "TEST_ID",
-      shared_location: "Test Location",
-      redirect_url: "https://example.com",
-      scans: 999,
-      referrals: 999,
-      active: true,
-      single_use: false,
-    };
-    folder.__codes.push(testRow);
-
-    if (folder.__codes.length) {
+    if (folder.__codes.length > 0) {
       const table = document.createElement("table");
       const rows = folder.__codes.map(qr => `
         <tr>
@@ -154,7 +143,7 @@ function renderFolderTree(tree, container) {
         </tr>
       `).join("");
 
-      console.log(`📄 Rendering rows for folder "${folderName}":`, rows);
+      console.log(`📄 Rendering ${folder.__codes.length} rows for folder "${folderName}"`);
 
       table.innerHTML = `
         <thead>
@@ -170,12 +159,13 @@ function renderFolderTree(tree, container) {
         </thead>
         <tbody>${rows}</tbody>
       `;
-
       content.appendChild(table);
     }
 
-    // Recursively render subfolders
-    renderFolderTree(folder.__subfolders, content);
+    // ✅ Only recurse if there are subfolders
+    if (folder.__subfolders && Object.keys(folder.__subfolders).length > 0) {
+      renderFolderTree(folder.__subfolders, content);
+    }
 
     header.onclick = () => {
       content.style.display = content.style.display === "none" ? "block" : "none";
