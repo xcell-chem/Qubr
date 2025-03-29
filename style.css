@@ -1,6 +1,8 @@
+/* General Styles */
 body {
-  font-family: sans-serif;
-  background: #f2f2f2;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f2f2f2;
+  color: #000;
   margin: 0;
   padding: 2rem;
   text-align: center;
@@ -15,6 +17,24 @@ body {
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
+.center {
+  text-align: center;
+}
+
+/* Typography */
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+p {
+  max-width: 600px;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+}
+
+/* Form Styles */
 form {
   text-align: left;
   margin-top: 1rem;
@@ -25,7 +45,10 @@ label {
   margin-top: 1rem;
 }
 
-input, textarea, select, button {
+input,
+textarea,
+select,
+button {
   margin-top: 0.5rem;
   padding: 0.5rem;
   width: 100%;
@@ -39,12 +62,14 @@ button {
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  transition: background 0.3s;
 }
 
 button:hover {
   background: #0072d0;
 }
 
+/* QR Preview Container */
 #qrcode-preview-container {
   margin-top: 2rem;
   display: flex;
@@ -68,144 +93,115 @@ button:hover {
   word-break: break-word;
 }
 
+/* Header */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
 
-/* Extracted Inline CSS */
-body {
-      font-family: sans-serif;
-      padding: 2rem;
-      background: #f9f9f9;
-      margin: 0;
-    }
+header img {
+  height: 60px;
+}
 
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 2rem;
-    }
+header h1 {
+  flex-grow: 1;
+  text-align: center;
+  margin: 0;
+}
 
-    header img {
-      height: 60px;
-    }
+header .nav {
+  display: flex;
+  gap: 1rem;
+}
 
-    header h1 {
-      flex-grow: 1;
-      text-align: center;
-      margin: 0;
-    }
+/* Balances */
+#balances {
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
 
-    header .nav {
-      display: flex;
-      gap: 1rem;
-    }
+/* Search Input */
+#search {
+  padding: 0.5rem;
+  width: 300px;
+  margin-bottom: 1rem;
+}
 
-    .center {
-      text-align: center;
-    }
+/* Folder Structure */
+.folder {
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+}
 
-    #balances {
-      font-weight: bold;
-      margin-bottom: 1rem;
-    }
+.folder-header {
+  background: #e9ecef;
+  padding: 0.75rem;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-    #search {
-      padding: 0.5rem;
-      width: 300px;
-      margin-bottom: 1rem;
-    }
+.folder-content {
+  display: block;
+  padding: 1rem;
+}
 
-    .folder {
-      margin-bottom: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      background: #fff;
-    }
+/* Tables */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 1rem;
+}
 
-    .folder-header {
-      background: #e9ecef;
-      padding: 0.75rem;
-      cursor: pointer;
-      font-weight: bold;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+th,
+td {
+  border: 1px solid #dee2e6;
+  padding: 0.5rem;
+  text-align: left;
+  font-size: 0.9rem;
+}
 
-    .folder-content {
-      display: block;
-      padding: 1rem;
-    }
+th {
+  background-color: #f1f3f5;
+}
 
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-top: 1rem;
-    }
+.export-btn {
+  font-size: 0.85rem;
+}
 
-    th, td {
-      border: 1px solid #dee2e6;
-      padding: 0.5rem;
-      text-align: left;
-      font-size: 0.9rem;
-    }
+/* Buttons / Links Group */
+.buttons {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
 
-    th {
-      background-color: #f1f3f5;
-    }
+.buttons a {
+  background-color: #00adb5;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
 
-    .export-btn {
-      font-size: 0.85rem;
-    }
+.buttons a:hover {
+  background-color: #007b80;
+}
 
-/* Extracted Inline CSS */
-body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #1a1a2e;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      text-align: center;
-    }
-    .logo {
-      max-width: 300px;
-      margin-bottom: 2rem;
-    }
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-    }
-    p {
-      max-width: 600px;
-      font-size: 1.1rem;
-      line-height: 1.6;
-      margin-bottom: 2.5rem;
-    }
-    .buttons {
-      display: flex;
-      gap: 1.5rem;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    .buttons a {
-      background-color: #00adb5;
-      color: white;
-      padding: 1rem 2rem;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      transition: background-color 0.3s;
-    }
-    .buttons a:hover {
-      background-color: #007b80;
-    }
-
-/* Extracted Inline CSS */
-body { font-family: sans-serif; padding: 2rem; }
-    #form, #login, #loading, #thankyou, #logout-box { display: none; }
-    label { display: block; margin-top: 1rem; }
-    input, button { margin-top: 0.5rem; }
+/* Conditional Visibility */
+#form,
+#login,
+#loading,
+#thankyou,
+#logout-box {
+  display: none;
+}
