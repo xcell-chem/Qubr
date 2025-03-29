@@ -36,7 +36,7 @@
   </label>
 
   <label>Group / Folder (optional):
-    <input type="text" id="label" />
+    <input type="text" id="label" placeholder="e.g. campaign/flyer/set1" />
   </label>
 
   <label>Description (optional):
@@ -50,7 +50,7 @@
   <button type="submit">Create & Save QR Code</button>
 </form>
 
-<div id="qrcode"></div>
+<canvas id="qrcode"></canvas>
 
 <script>
   const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
@@ -80,8 +80,8 @@
     const qrId = idType === "uuid" ? crypto.randomUUID() : customId;
     const fullURL = `https://superlative-creponne-0f6c7f.netlify.app/?id=${qrId}`;
 
-    document.getElementById("qrcode").innerHTML = "";
-    QRCode.toCanvas(document.getElementById("qrcode"), fullURL, { width: 200 });
+    const canvas = document.getElementById("qrcode");
+    await QRCode.toCanvas(canvas, fullURL, { width: 200 });
 
     const { error } = await supabase.from("qr_codes").insert({
       id: qrId,
