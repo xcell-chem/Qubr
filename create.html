@@ -7,101 +7,72 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script src="/env.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 2rem; background: #f8f8f8; }
-    label { display: block; margin-top: 1rem; }
-    input, select, button, textarea {
-      margin-top: 0.5rem; padding: 0.5rem; width: 100%; max-width: 500px;
-    }
-    #qrcode { margin-top: 2rem; }
+    body { font-family: sans-serif; padding: 2rem; }
+    input, button { display: block; margin-top: 1rem; padding: 0.5rem; width: 300px; }
+    #qr-preview { margin-top: 2rem; }
   </style>
 </head>
 <body>
 
-<h1>Create a QR Code</h1>
+<h1>Create QR Code</h1>
 
-<form id="create-form">
-  <label>QR Code ID Type:
-    <select id="id_type">
-      <option value="uuid">Generate UUID</option>
-      <option value="custom">Use Custom ID</option>
-    </select>
-  </label>
+<div>
+  <label>Folder path (e.g., dir/sub/folder): <input type="text" id="label" /></label>
+  <label>Redirect URL: <input type="url" id="redirect_url" /></label>
+  <label>Location where shared: <input type="text" id="shared_location" /></label>
+  <button id="createBtn">Generate & Save</button>
+</div>
 
-  <label id="custom-id-label" style="display:none;">Custom QR ID:
-    <input type="text" id="custom_id" placeholder="e.g. station_3" />
-  </label>
-
-  <label>Redirect URL (optional):
-    <input type="url" id="redirect_url" placeholder="https://example.com" />
-  </label>
-
-  <label>Group / Folder (optional):
-    <input type="text" id="label" />
-  </label>
-
-  <label>Description (optional):
-    <textarea id="custom_1" rows="2" placeholder="e.g. Front entrance, promo flyer 4"></textarea>
-  </label>
-
-  <label><input type="checkbox" id="active" checked /> QR code is active</label>
-  <label><input type="checkbox" id="single_use" /> Single use only</label>
-  <label><input type="checkbox" id="registered" checked /> Pre-register now (ready to scan immediately)</label>
-
-  <button type="submit">Create & Save QR Code</button>
-</form>
-
-<div id="qrcode"></div>
+<div id="qr-preview"></div>
 
 <script>
-  const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
+const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
 
-  document.getElementById("id_type").addEventListener("change", (e) => {
-    document.getElementById("custom-id-label").style.display = e.target.value === "custom" ? "block" : "none";
+document.getElementById("createBtn").addEventListener("click", async () => {
+  const label = document.getElementById("label").value.trim();
+  const redirect_url = document.getElementById("redirect_url").value.trim();
+  const shared_location = document.getElementById("shared_location").value.trim();
+  const qrPreview = document.getElementById("qr-preview");
+
+  if (!redirect_url) {
+    alert("Please enter a redirect URL.");
+    return;
+  }
+
+  const { data: sessionData } = await supabase.auth.getSession();
+  const user = sessionData?.session?.user;
+  if (!user) {
+    alert("Please login to create codes.");
+    return;
+  }
+
+  const qrId = crypto.randomUUID();
+  const fullUrl = `${window.location.origin}/scan?id=${qrId}`;
+
+  // Display QR code
+  qrPreview.innerHTML = "";
+  new QRCode(qrPreview, {
+    text: fullUrl,
+    width: 200,
+    height: 200
   });
 
-  document.getElementById("create-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const idType = document.getElementById("id_type").value;
-    const customId = document.getElementById("custom_id").value.trim();
-    const redirectUrl = document.getElementById("redirect_url").value.trim();
-    const label = document.getElementById("label").value.trim();
-    const custom_1 = document.getElementById("custom_1").value.trim();
-    const active = document.getElementById("active").checked;
-    const singleUse = document.getElementById("single_use").checked;
-    const registered = document.getElementById("registered").checked;
-
-    if (idType === "custom" && !customId) return alert("Custom ID is required.");
-
-    const { data: sessionData } = await supabase.auth.getSession();
-    const user = sessionData?.session?.user;
-    if (!user) return alert("Please log in first.");
-
-    const qrId = idType === "uuid" ? crypto.randomUUID() : customId;
-    const fullURL = `https://superlative-creponne-0f6c7f.netlify.app/?id=${qrId}`;
-
-    document.getElementById("qrcode").innerHTML = "";
-    QRCode.toCanvas(document.getElementById("qrcode"), fullURL, { width: 200 });
-
-    const { error } = await supabase.from("qr_codes").insert({
-      id: qrId,
-      owner_id: user.id,
-      redirect_url: redirectUrl || null,
-      label: label || null,
-      custom_1: custom_1 || null,
-      active,
-      single_use: singleUse,
-      registered,
-      created_by: user.id
-    });
-
-    if (error) {
-      console.error("Save error:", error);
-      alert("❌ Failed to save QR code.");
-    } else {
-      alert("✅ QR code created and saved!");
-    }
+  // Save to DB
+  const { error } = await supabase.from("qr_codes").insert({
+    id: qrId,
+    owner_id: user.id,
+    label,
+    redirect_url,
+    shared_location
   });
+
+  if (error) {
+    console.error("Save error:", error);
+    alert("❌ Failed to save QR code. Check console.");
+  } else {
+    alert("✅ QR code created and saved!");
+  }
+});
 </script>
 
 </body>
