@@ -27,7 +27,7 @@
 <body>
 
 <h1>📊 QubR Dashboard</h1>
-<div id="balances"></div>
+<div id="balances">Loading...</div>
 <input type="text" id="search" placeholder="Search by label, ID, or URL..." />
 <div id="folders"></div>
 <button onclick="logout()">🔒 Log out</button>
@@ -38,15 +38,20 @@ let user = null;
 let allCodes = [];
 
 async function loadDashboard() {
-  const { data: sessionData } = await supabase.auth.getSession();
+  console.log("🔄 Loading dashboard...");
+
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
   user = sessionData?.session?.user;
 
+  if (sessionError) console.error("❌ Session error:", sessionError);
   if (!user) {
-    const { data: userData } = await supabase.auth.getUser();
+    const { data: userData, error: userErr } = await supabase.auth.getUser();
     user = userData?.user;
+    if (userErr) console.error("❌ Auth fallback error:", userErr);
   }
 
   if (!user) {
+    console.warn("❌ No user logged in — redirecting.");
     document.body.innerHTML = `
       <h2>🔐 Please log in to access your dashboard.</h2>
       <button onclick="login()">Login with Google</button>
@@ -54,16 +59,21 @@ async function loadDashboard() {
     return;
   }
 
-  const [{ data: qrCodes, error }, { data: userInfo }] = await Promise.all([
+  console.log("✅ Logged in as:", user.email, user.id);
+
+  const [{ data: qrCodes, error: qrErr }, { data: userInfo, error: userErr }] = await Promise.all([
     supabase.from("qr_codes").select("*").eq("owner_id", user.id),
     supabase.from("app_users").select("coin_balance, free_credits, purchased_credits").eq("id", user.id).single()
   ]);
 
-  if (error || !Array.isArray(qrCodes)) {
-    console.error("❌ Failed to load QR codes:", error);
+  if (qrErr || !Array.isArray(qrCodes)) {
+    console.error("❌ Failed to load QR codes:", qrErr);
     alert("Unable to load QR codes.");
     return;
   }
+
+  if (userErr) console.warn("⚠️ Could not fetch user profile info:", userErr);
+  console.log("✅ Loaded", qrCodes.length, "QR codes");
 
   document.getElementById("balances").innerText =
     `💰 Coins: ${userInfo?.coin_balance || 0} | 🖨️ Free credits: ${userInfo?.free_credits || 0} | Purchased: ${userInfo?.purchased_credits || 0}`;
@@ -71,16 +81,17 @@ async function loadDashboard() {
   allCodes = [];
 
   for (const qr of qrCodes) {
-    const { data: events } = await supabase
+    const { data: events, error: scanErr } = await supabase
       .from("scan_events")
       .select("referred_signup")
       .eq("qr_id", qr.id);
 
-    allCodes.push({
-      ...qr,
-      scans: events?.length || 0,
-      referrals: events?.filter(e => e.referred_signup).length || 0
-    });
+    if (scanErr) console.warn("⚠️ Failed loading scan_events for:", qr.id, scanErr);
+
+    const scans = events?.length || 0;
+    const referrals = events?.filter(e => e.referred_signup).length || 0;
+
+    allCodes.push({ ...qr, scans, referrals });
   }
 
   const tree = buildFolderTree(allCodes);
@@ -91,13 +102,13 @@ function buildFolderTree(codes) {
   const root = {};
 
   for (const qr of codes) {
-    const pathParts = (qr.label || "Unlabeled").split("/").map(s => s.trim());
+    const path = (qr.label || "Unlabeled").split("/").map(s => s.trim());
     let node = root;
 
-    for (let i = 0; i < pathParts.length; i++) {
-      const part = pathParts[i];
+    for (let i = 0; i < path.length; i++) {
+      const part = path[i];
       if (!node[part]) node[part] = { __codes: [], __subfolders: {} };
-      if (i === pathParts.length - 1) {
+      if (i === path.length - 1) {
         node[part].__codes.push(qr);
       } else {
         node = node[part].__subfolders;
@@ -117,7 +128,7 @@ function renderFolderTree(tree, container) {
 
     const header = document.createElement("div");
     header.className = "folder-header";
-    header.textContent = folderName;
+    header.textContent = `${folderName} (${folder.__codes.length} items)`;
 
     const content = document.createElement("div");
     content.className = "folder-content";
@@ -141,7 +152,7 @@ function renderFolderTree(tree, container) {
             <tr>
               <td>${qr.id}</td>
               <td>${qr.shared_location || ""}</td>
-              <td><a href="${qr.redirect_url}" target="_blank">${qr.redirect_url}</a></td>
+              <td><a href="${qr.redirect_url}" target="_blank">${qr.redirect_url || ""}</a></td>
               <td>${qr.scans}</td>
               <td>${qr.referrals}</td>
               <td>${qr.active ? "✅" : "❌"}</td>
@@ -153,7 +164,6 @@ function renderFolderTree(tree, container) {
       content.appendChild(table);
     }
 
-    // Subfolders
     renderFolderTree(folder.__subfolders, content);
 
     header.onclick = () => {
