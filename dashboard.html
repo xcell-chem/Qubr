@@ -117,20 +117,45 @@ function renderFolderTree(tree, container) {
 
   for (const folderName in tree) {
     const folder = tree[folderName];
-    console.log(`📁 Folder: ${folderName}, Codes: ${folder.__codes.length}`, folder.__codes);
-
     const wrapper = document.createElement("div");
     wrapper.className = "folder";
 
     const header = document.createElement("div");
     header.className = "folder-header";
     header.textContent = `${folderName} (${folder.__codes.length} codes)`;
+    console.log(`📂 Folder: "${folderName}" → Codes:`, folder.__codes);
 
     const content = document.createElement("div");
     content.className = "folder-content";
 
-    if (folder.__codes.length > 0) {
+    // ✅ TEMP: Add dummy code for testing
+    const testRow = {
+      id: "TEST_ID",
+      shared_location: "Test Location",
+      redirect_url: "https://example.com",
+      scans: 999,
+      referrals: 999,
+      active: true,
+      single_use: false,
+    };
+    folder.__codes.push(testRow);
+
+    if (folder.__codes.length) {
       const table = document.createElement("table");
+      const rows = folder.__codes.map(qr => `
+        <tr>
+          <td>${qr.id}</td>
+          <td>${qr.shared_location || ""}</td>
+          <td><a href="${qr.redirect_url || "#"}" target="_blank">${qr.redirect_url || ""}</a></td>
+          <td>${qr.scans}</td>
+          <td>${qr.referrals}</td>
+          <td>${qr.active ? "✅" : "❌"}</td>
+          <td>${qr.single_use ? "☑️" : ""}</td>
+        </tr>
+      `).join("");
+
+      console.log(`📄 Rendering rows for folder "${folderName}":`, rows);
+
       table.innerHTML = `
         <thead>
           <tr>
@@ -143,20 +168,9 @@ function renderFolderTree(tree, container) {
             <th>Single Use</th>
           </tr>
         </thead>
-        <tbody>
-          ${folder.__codes.map(qr => `
-            <tr>
-              <td>${qr.id}</td>
-              <td>${qr.shared_location || ""}</td>
-              <td><a href="${qr.redirect_url || "#"}" target="_blank">${qr.redirect_url || ""}</a></td>
-              <td>${qr.scans}</td>
-              <td>${qr.referrals}</td>
-              <td>${qr.active ? "✅" : "❌"}</td>
-              <td>${qr.single_use ? "☑️" : ""}</td>
-            </tr>
-          `).join("")}
-        </tbody>
+        <tbody>${rows}</tbody>
       `;
+
       content.appendChild(table);
     }
 
