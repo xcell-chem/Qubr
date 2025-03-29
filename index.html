@@ -1,23 +1,40 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>QubR – Earn by Sharing QR Codes</title>
-<link href="https://catlvxqphrmicnjzbyal.supabase.co/storage/v1/object/public/images//qbr.jpg" rel="icon" type="image/png"/>
-<link href="style.css" rel="stylesheet"/></head>
+  <meta charset="UTF-8">
+  <title>QubR Home</title>
+  <link rel="stylesheet" href="style.css">
+</head>
 <body>
-<img alt="QubR Logo" class="logo" src="https://catlvxqphrmicnjzbyal.supabase.co/storage/v1/object/public/images//qbr.jpg"/>
-<h1 class="homepage-text">Welcome to QubR</h1>
-<p>
-    QubR is a community-powered QR code platform that pays you to share stickers and links.  
-    Earn coins and commission every time your code is scanned or someone signs up.  
-    Perfect for creators, marketers, and businesses — QubR helps you understand what’s working and engage your community like never before.
-  </p>
-<div class="buttons">
-<a href="/dashboard.html">View My Codes</a>
-<a href="/create.html">Create Codes</a>
-</div>
-</body><div id="balances">Coin Balance: 0</div>
+
+<header>
+  <img src="logo.png" alt="QubR Logo">
+  <h1>QubR Dashboard</h1>
+  <div id="balances">
+    💰 Coins: <span id="coin-balance">9999</span> |
+    🖨 Free credits: <span id="free-print-balance">0</span> |
+    Purchased: <span id="purchased-print-balance">999999</span>
+  </div>
+  <div class="nav">
+    <a href="index.html">🏠 Home</a>
+    <button onclick="logout()">🔒 Logout</button>
+  </div>
+</header>
+
+<main>
+  <img src="qubr-banner.png" alt="QubR" class="logo">
+  <h1 class="homepage-text">Welcome to QubR</h1>
+  <p style="color: gold; text-align: center;">QubR is a community-powered QR code platform that pays you to share links.</p>
+  <p style="color: gold; text-align: center;">Earn coins and commission every time your code is scanned or someone signs up.</p>
+  <p style="color: gold; text-align: center;">Perfect for creators, marketers, and businesses.</p>
+</main>
+
+<script src="env.js"></script>
+<script>
+  // dummy logout
+  function logout() {
+    alert('Logged out!');
+  }
+</script>
+</body>
 </html>
