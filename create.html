@@ -1,9 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Create QR Codes – QubR</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      text-align: center;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #1a1a2e;
+      color: gold;
+      margin: 0;
+      padding: 2rem;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    header img {
+      max-width: 160px;
+      margin-bottom: 1rem;
+    }
+
+    #balances {
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+
+    .nav {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .nav a, .nav button {
+      background-color: #1e90ff;
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .nav a:hover, .nav button:hover {
+      background-color: #0072d0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      color: #000;
+      padding: 2rem;
+      border-radius: 10px;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+      text-align: center;
+    }
+
+    input, textarea {
+      display: block;
+      margin: 0.5rem auto;
+      padding: 0.5rem;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    button[type="submit"] {
+      margin-top: 1.5rem;
+      background: #1e90ff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      padding: 0.75rem 2rem;
+    }
+
+    button[type="submit"]:hover {
+      background: #0072d0;
+    }
+  </style>
 </head>
 <body>
 
@@ -15,39 +100,40 @@
     Purchased: <span id="purchased-print-balance">999999</span>
   </div>
   <div class="nav">
-    <button onclick="window.location.href='index.html'">🏠 Home</button>
+    <a href="index.html">🏠 Home</a>
     <button onclick="logout()">🔒 Logout</button>
   </div>
 </header>
-<h1 style="text-align: center; color: gold;">✨ Create QR Codes – QubR</h1>
- 
+
+<h1 style="color: gold;">✨ Create QR Codes</h1>
+
 <main class="container">
-   <form>
-    <label style="text-align: center;">How many QR codes?
+  <form>
+    <label>How many QR codes?
       <input type="number" value="1">
     </label>
 
-    <label style="text-align: center;">Redirect URL (optional)
+    <label>Redirect URL (optional)
       <input type="url" value="QubR.co.uk">
     </label>
 
-    <label style="text-align: center;">Group / Folder (optional)
+    <label>Group / Folder (optional)
       <input type="text" placeholder="e.g. 2025/March/Easter/flyer1">
     </label>
 
-    <label style="text-align: center;">Description (optional)
+    <label>Description (optional)
       <textarea placeholder="e.g. School hall, promo 3"></textarea>
     </label>
 
-    <label style="text-align: center;">
+    <label>
       <input type="checkbox" checked> QR code is active
     </label>
 
-    <label style="text-align: center;">
+    <label>
       <input type="checkbox"> Single use only
     </label>
 
-    <label style="text-align: center;">
+    <label>
       <input type="checkbox" checked> Pre-register (ready to use now). If unchecked, user can edit on first scan.
     </label>
 
@@ -61,5 +147,6 @@
     alert('Logged out!');
   }
 </script>
+
 </body>
 </html>
