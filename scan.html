@@ -7,9 +7,8 @@
 <title>Claim QR Code | QubR</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <script src="/env.js"></script>
-
 <link href="style.css" rel="stylesheet"/></head>
-<body>
+<body><div id="header"></div>
 <h1>QubR QR Claim</h1>
 <div id="loading">Checking QR code...</div>
 <div id="login">
@@ -29,6 +28,5 @@
 <div id="logout-box">
 <button onclick="logout()">Log out</button>
 </div>
-
-<script src="scan.js"></script></body>
+<script src="scan.js"></script><script src="/supabaseClient.js"></script><script src="/header.js"></script></body>
 </html>
